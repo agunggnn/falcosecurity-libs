@@ -801,7 +801,7 @@ public:
 	  \param node_name the node name is used as a filter when requesting metadata of pods 
 	  to the API server; if empty, no filter is set
 	*/
-	void init_k8s_client(std::string* api_server, std::string* ssl_cert, std::string *node_name, bool verbose = false);
+	void init_k8s_client(std::string* api_server, std::string* ssl_cert, std::string* node_name, bool verbose = false);
 	void make_k8s_client();
 	k8s* get_k8s_client() const { return m_k8s_client; }
 
