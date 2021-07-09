@@ -52,7 +52,8 @@ k8s_net::k8s_net(k8s& kube, k8s_state_t& state, const std::string& uri,
 		m_bt(bt),
 		m_stopped(true),
 		m_blocking_sockets(blocking_sockets),
-		m_event_filter(event_filter)
+		m_event_filter(event_filter),
+		m_node_selector(node_selector)
 {
 }
 
