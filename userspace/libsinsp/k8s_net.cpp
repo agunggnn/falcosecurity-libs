@@ -44,16 +44,14 @@ k8s_net::k8s_net(k8s& kube, k8s_state_t& state, const std::string& uri,
 	ssl_ptr_t ssl,
 	bt_ptr_t bt,
 	filter_ptr_t event_filter,
-	bool blocking_sockets,
-	const std::string& node_selector) : m_state(state),
+	bool blocking_sockets) : m_state(state),
 		m_collector(std::make_shared<collector_t>()),
 		m_uri(uri),
 		m_ssl(ssl),
 		m_bt(bt),
 		m_stopped(true),
 		m_blocking_sockets(blocking_sockets),
-		m_event_filter(event_filter),
-		m_node_selector(node_selector)
+		m_event_filter(event_filter)
 {
 }
 
@@ -159,8 +157,7 @@ bool k8s_net::has_dependency(const k8s_component::type_map::value_type& componen
 
 k8s_net::handler_ptr_t k8s_net::make_handler(k8s_state_t& state, const k8s_component::type component, bool connect,
 											handler_ptr_t dep, collector_ptr_t collector, const std::string& urlstr,
-											ssl_ptr_t ssl, bt_ptr_t bt, bool blocking, filter_ptr_t event_filter,
-											const std::string& node_selector)
+											ssl_ptr_t ssl, bt_ptr_t bt, bool blocking, filter_ptr_t event_filter)
 {
 	switch(component)
 	{
@@ -169,7 +166,7 @@ k8s_net::handler_ptr_t k8s_net::make_handler(k8s_state_t& state, const k8s_compo
 		case k8s_component::K8S_NAMESPACES:
 			return std::make_shared<k8s_namespace_handler>(state, dep, collector, urlstr, "1.1", ssl, bt, connect, blocking);
 		case k8s_component::K8S_PODS:
-			return std::make_shared<k8s_pod_handler>(state, dep, collector, urlstr, "1.1", ssl, bt, connect, blocking, node_selector);
+			return std::make_shared<k8s_pod_handler>(state, dep, collector, urlstr, "1.1", ssl, bt, connect, blocking);
 		case k8s_component::K8S_REPLICATIONCONTROLLERS:
 			return std::make_shared<k8s_replicationcontroller_handler>(state, dep, collector, urlstr, "1.1", ssl, bt, connect, blocking);
 		case k8s_component::K8S_REPLICASETS:
@@ -196,7 +193,7 @@ void k8s_net::add_handler(const k8s_component::type_map::value_type& component)
 	{
 		handler_ptr_t handler =
 			make_handler(m_state, component.first, true, get_dependency_handler(m_handlers, component),
-						 m_collector, m_uri.to_string(), m_ssl, m_bt, m_blocking_sockets, m_event_filter, m_node_selector);
+						 m_collector, m_uri.to_string(), m_ssl, m_bt, m_blocking_sockets, m_event_filter);
 		if(handler)
 		{
 			if(!m_machine_id.empty())

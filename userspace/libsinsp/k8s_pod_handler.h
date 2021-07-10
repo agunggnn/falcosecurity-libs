@@ -40,7 +40,6 @@ public:
 		,bt_ptr_t bt = 0
 		,bool connect = true
 		,bool blocking_socket = false
-		,std::string node_selector = ""
 #endif // HAS_CAPTURE
 		);
 
