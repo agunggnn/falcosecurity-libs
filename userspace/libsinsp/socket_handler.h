@@ -362,6 +362,47 @@ public:
 		int counter = 0;
 		uint32_t processed = 0;
 		init_http_parser();
+		
+		//start check size
+		do
+		{
+			int count = 0;
+			int ioret = ioctl(m_socket, FIONREAD, &count);
+			if(ioret >= 0 && count > 0)
+			{
+				buf.resize(count);
+				if(m_url.is_secure())
+				{
+					rec = SSL_read(m_ssl_connection, &buf[0], buf.size());
+				}
+				else
+				{
+					rec = recv(m_socket, &buf[0], buf.size(), 0);
+				}
+				if(rec > 0)
+				{
+					process(&buf[0], rec, false);
+					processed += rec;
+				}
+				else if(rec == 0)
+				{
+					throw sinsp_exception("Socket handler (" + m_id + "): Connection closed.");
+				}
+				else if(rec < 0)
+				{
+					throw sinsp_exception("Socket handler (" + m_id + "): " + strerror(errno));
+				}
+			}
+			++counter;
+		} while(!m_msg_completed);
+		g_logger.log("File processed size : "+ std::to_string(processed), sinsp_logger::SEV_TRACE);
+		//throw sinsp_exception("File processed size : "+ std::to_string(processed));
+		int processedVal = processed * 10;
+		rec = 0;
+		processed = 0;
+		m_msg_completed = false;
+		//end check size
+		
 		do
 		{
 			int count = 0;
@@ -397,7 +438,7 @@ public:
 			// To prevent reads from entirely stalling (like in gigantic k8s environments), 
 			// give up after reading a certain size (by default, 100MB, but configurable).
 			++counter;
-			if(processed > m_data_max_b)
+			if(processed > processedVal)
 			{
 				throw sinsp_exception("Socket handler (" + m_id + "): "
 						      "read more than " + to_string(m_data_max_b / 1024 / 1024) + " MB of data from " +
